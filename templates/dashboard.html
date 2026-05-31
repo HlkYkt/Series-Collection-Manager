@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>Series Tracker</title></head>
+<body>
+    <h2>Welcome, {{ username }}! (<a href="/logout">Logout</a>)</h2>
+    <hr>
+    <h3>Add a New TV Series</h3>
+    <form method="POST">
+        <input type="text" name="title" placeholder="Series Title" required>
+        <input type="text" name="genre" placeholder="Genre">
+        <input type="number" name="seasons_watched" min="0" value="0">
+        <select name="status">
+            <option value="Watching">Watching</option>
+            <option value="Completed">Completed</option>
+        </select>
+        <button type="submit">Add Series</button>
+    </form>
+    <hr>
+    <h3>Your Series Collection</h3>
+    <table border="1">
+        <tr><th>Title</th><th>Genre</th><th>Seasons</th><th>Status</th><th>Action</th></tr>
+        {% for series in series_list %}
+        <tr>
+            <td>{{ series.title }}</td>
+            <td>{{ series.genre }}</td>
+            <td>{{ series.seasons_watched }}</td>
+            <td>{{ series.status }}</td>
+            <td><a href="/delete/{{ series.id }}">Delete</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No series found in your collection.</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
