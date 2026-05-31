@@ -22,7 +22,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Business Logic for Unit Test
+
 def validate_seasons(seasons):
     try:
         val = int(seasons)
