@@ -101,5 +101,8 @@ def delete_series(id):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print("Veritabanı hatası bypass edildi:", e)
     app.run(debug=True)

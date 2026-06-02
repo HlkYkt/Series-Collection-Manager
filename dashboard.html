@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Series Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f6f9; padding-bottom: 20px; margin-bottom: 20px; }
+        .header h1 { color: #1e3c72; margin: 0; font-size: 24px; }
+        .btn-logout { background: #dc3545; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; }
+        .form-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+        .form-section h3 { margin-top: 0; color: #2a5298; }
+        .form-inline { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-inline input, .form-inline select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; flex: 1; min-width: 150px; }
+        .btn-add { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #1e3c72; color: white; }
+        tr:hover { background-color: #f8f9fa; }
+        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .no-data { text-align: center; color: #777; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hoş geldin, {{ username }}!</h1>
+            <a href="/logout" class="btn-logout">Çıkış Yap</a>
+        </div>
+
+        <div class="form-section">
+            <h3>Yeni Dizi Ekle</h3>
+            <form action="/dashboard" method="POST" class="form-inline">
+                <input type="text" name="title" placeholder="Dizi Adı" required>
+                <input type="text" name="genre" placeholder="Tür (Drama, Bilim Kurgu vb.)">
+                <input type="number" name="seasons" placeholder="İzlenen Sezon Sayısı" min="0" required>
+                <select name="status">
+                    <option value="Watching">İzliyorum</option>
+                    <option value="Completed">Tamamlandı</option>
+                    <option value="Plan to Watch">İzleyeceğim</option>
+                </select>
+                <button type="submit" class="btn-add">Dizi Ekle</button>
+            </form>
+        </div>
+
+        <h3>Dizi Koleksiyonun</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dizi Adı</th>
+                    <th>Tür</th>
+                    <th>İzlenen Sezon</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for series in series_list %}
+                <tr>
+                    <td><strong>{{ series['title'] }}</strong></td>
+                    <td>{{ series['genre'] if series['genre'] else '-' }}</td>
+                    <td>{{ series['seasons_watched'] }}</td>
+                    <td>{{ series['status'] }}</td>
+                    <td>
+                        <a href="/delete/{{ series['id'] }}" class="btn-delete" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="no-data">Koleksiyonunuzda henüz bir dizi bulunmuyor.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
