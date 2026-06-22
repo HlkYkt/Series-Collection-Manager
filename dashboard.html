@@ -5,7 +5,7 @@
     <title>Dashboard - Series Tracker</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .container { max-width: 1150px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f6f9; padding-bottom: 20px; margin-bottom: 20px; }
         .header h1 { color: #1e3c72; margin: 0; font-size: 24px; }
         .btn-logout { background: #dc3545; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; }
@@ -14,12 +14,20 @@
         .form-inline { display: flex; gap: 10px; flex-wrap: wrap; }
         .form-inline input, .form-inline select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; flex: 1; min-width: 150px; }
         .btn-add { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 14px; overflow: visible; }
         th { background-color: #1e3c72; color: white; }
         tr:hover { background-color: #f8f9fa; }
-        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 12px; font-weight: bold; }
+        .btn-update { background: #007bff; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-season { background: #17a2b8; color: white; text-decoration: none; padding: 5px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; }
         .no-data { text-align: center; color: #777; padding: 20px; }
+        .table-input { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        .table-select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: white; box-sizing: border-box; }
+        .table-textarea { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+        .season-container { display: flex; align-items: center; gap: 6px; }
+        .star-container { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .action-container { display: flex; gap: 4px; }
     </style>
 </head>
 <body>
@@ -34,7 +42,7 @@
             <form action="/dashboard" method="POST" class="form-inline">
                 <input type="text" name="title" placeholder="Dizi Adı" required>
                 <input type="text" name="genre" placeholder="Tür (Drama, Bilim Kurgu vb.)">
-                <input type="number" name="seasons" placeholder="İzlenen Sezon Sayısı" min="0" required>
+                <input type="number" name="seasons_watched" placeholder="İzlenen Sezon Sayısı" min="0" required>
                 <select name="status">
                     <option value="Watching">İzliyorum</option>
                     <option value="Completed">Tamamlandı</option>
@@ -48,27 +56,66 @@
         <table>
             <thead>
                 <tr>
-                    <th>Dizi Adı</th>
-                    <th>Tür</th>
-                    <th>İzlenen Sezon</th>
-                    <th>Durum</th>
-                    <th>İşlem</th>
+                    <th style="width: 15%;">Dizi Adı</th>
+                    <th style="width: 12%;">Tür</th>
+                    <th style="width: 15%;">İzlenen Sezon</th>
+                    <th style="width: 12%;">Durum</th>
+                    <th style="width: 12%;">En Sevilen Sezon</th>
+                    <th style="width: 14%;">Dizi Hakkında Yorumlar</th>
+                    <th style="width: 12%;">Öneri Durumu</th>
+                    <th style="width: 8%;">İşlem</th>
                 </tr>
             </thead>
             <tbody>
                 {% for series in series_list %}
                 <tr>
-                    <td><strong>{{ series['title'] }}</strong></td>
-                    <td>{{ series['genre'] if series['genre'] else '-' }}</td>
-                    <td>{{ series['seasons_watched'] }}</td>
-                    <td>{{ series['status'] }}</td>
-                    <td>
-                        <a href="/delete/{{ series['id'] }}" class="btn-delete" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</a>
-                    </td>
+                    <form action="/edit_series/{{ series['id'] }}" method="POST">
+                        <td>
+                            <input type="text" name="title" value="{{ series['title'] }}" class="table-input" style="font-weight: bold; color: #1e3c72;" required>
+                        </td>
+                        <td>
+                            <input type="text" name="genre" value="{{ series['genre'] if series['genre'] else '' }}" placeholder="Tür belirtilmemiş" class="table-input">
+                        </td>
+                        <td>
+                            <div class="season-container">
+                                <input type="number" name="seasons_watched" value="{{ series['seasons_watched'] }}" min="0" class="table-input" style="width: 45px; text-align: center;" required>
+                                <a href="/increment_season/{{ series['id'] }}" class="btn-season">+ Sezon</a>
+                            </div>
+                        </td>
+                        <td>
+                            <select name="status" class="table-select">
+                                <option value="Watching" {% if series['status'] == 'Watching' or series['status'] == 'İzliyorum' %}selected{% endif %}>İzliyorum</option>
+                                <option value="Completed" {% if series['status'] == 'Completed' or series['status'] == 'Tamamlandı' %}selected{% endif %}>Tamamlandı</option>
+                                <option value="Plan to Watch" {% if series['status'] == 'Plan to Watch' or series['status'] == 'İzleyeceğim' %}selected{% endif %}>İzleyeceğim</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="star-container">
+                                <input type="number" name="favorite_season" value="{{ series['favorite_season'] if series['favorite_season'] else '' }}" min="1" placeholder="Sezon" class="table-input" style="width: 50px; text-align: center;">
+                                <span>⭐</span>
+                            </div>
+                        </td>
+                        <td>
+                            <textarea name="comments" rows="1" placeholder="Yorum yaz..." class="table-textarea">{{ series['comments'] if series['comments'] else '' }}</textarea>
+                        </td>
+                        <td>
+                            <select name="recommendation" class="table-select">
+                                <option value="" {% if not series['recommendation'] %}selected{% endif %}>Belirtilmemiş</option>
+                                <option value="Tavsiye Ediyorum" {% if series['recommendation'] == 'Tavsiye Ediyorum' %}selected{% endif %}>👍 Tavsiye Ediyorum</option>
+                                <option value="Tavsiye Etmiyorum" {% if series['recommendation'] == 'Tavsiye Etmiyorum' %}selected{% endif %}>👎 Tavsiye Etmiyorum</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="action-container">
+                                <button type="submit" class="btn-update">Güncelle</button>
+                                <a href="/delete/{{ series['id'] }}" class="btn-delete" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</a>
+                            </div>
+                        </td>
+                    </form>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="no-data">Koleksiyonunuzda henüz bir dizi bulunmuyor.</td>
+                    <td colspan="8" class="no-data">Koleksiyonunuzda henüz bir dizi bulunmuyor.</td>
                 </tr>
                 {% endfor %}
             </tbody>
